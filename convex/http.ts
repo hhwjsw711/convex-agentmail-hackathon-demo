@@ -12,8 +12,15 @@ http.route({
     try {
       const body = await req.json();
       
-      // AgentMail sends webhook with inbox_id and message data
-      const { inbox_id, message } = body;
+      // AgentMail webhook format
+      const eventType = body.event_type;
+      
+      if (eventType !== "message.received") {
+        return new Response("Ignored non-message event", { status: 200 });
+      }
+
+      const message = body.message;
+      const inbox_id = body.inbox_id || message?.inbox_id;
       
       if (!inbox_id || !message) {
         return new Response("Missing inbox_id or message", { status: 400 });
